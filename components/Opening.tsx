@@ -38,6 +38,28 @@ const uiText = {
   signature: { en: 'RR Nucleus', id: 'RR Nucleus' },
 };
 
+// --- Audio Assets ---
+const sounds = {
+  click: 'https://actions.google.com/sounds/v1/ui/ui_tap_positive.ogg',
+  spin: 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg',
+  reveal: 'https://actions.google.com/sounds/v1/notifications/magic_impact_1.ogg',
+  copy: 'https://actions.google.com/sounds/v1/ui/camera_shutter.ogg',
+  background: 'https://actions.google.com/sounds/v1/weather/wind_loop.ogg',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
+  try {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
+  } catch (error) {
+    console.error("Could not play audio:", error);
+    return null;
+  }
+};
+
 const IntegrityWheel: React.FC = () => {
   const [lang, setLang] = useState<Language | null>(null);
   const [screen, setScreen] = useState<GameScreen>('language');
@@ -52,6 +74,7 @@ const IntegrityWheel: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   const wheelRef = useRef<HTMLDivElement>(null);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
   
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -61,12 +84,26 @@ const IntegrityWheel: React.FC = () => {
   }, []);
 
   const selectLanguage = (selectedLang: Language) => {
+    playSound(sounds.click);
     setLang(selectedLang);
     setCopyButtonText(uiText.generateLink[selectedLang]);
     setScreen('landing');
+
+    if (!backgroundAudioRef.current) {
+        const audio = new Audio(sounds.background);
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.play().catch(error => console.log("Background audio playback failed.", error));
+        backgroundAudioRef.current = audio;
+    }
   };
 
   const handleSpin = () => {
+    playSound(sounds.click);
+    playSound(sounds.spin);
+
+    if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.1;
+    
     const newRotation = rotation + 360 * 5 + Math.random() * 360;
     const duration = 5000; // 5 seconds
     setRotation(newRotation);
@@ -74,6 +111,9 @@ const IntegrityWheel: React.FC = () => {
     setScreen('spinning');
 
     setTimeout(() => {
+      if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.3;
+      playSound(sounds.reveal);
+
       const finalAngle = newRotation % 360;
       const segmentAngle = 360 / traits.length;
       const landedIndex = Math.round(((360 - finalAngle) % 360) / segmentAngle) % traits.length;
@@ -84,6 +124,7 @@ const IntegrityWheel: React.FC = () => {
   };
 
   const closeModal = () => {
+    playSound(sounds.click);
     setIsModalOpen(false);
     setScreen('form');
   };
@@ -101,6 +142,7 @@ const IntegrityWheel: React.FC = () => {
   
   const handleCopyToClipboard = () => {
     if (!lang) return;
+    playSound(sounds.copy);
     navigator.clipboard.writeText(decodeURIComponent(getShareMessage()));
     setCopyButtonText(uiText.linkCopied[lang]);
     setTimeout(() => setCopyButtonText(uiText.generateLink[lang]), 2000);
@@ -214,7 +256,7 @@ const IntegrityWheel: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                 <a href={`https://api.whatsapp.com/send?text=${getShareMessage()}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all duration-300 transform hover:scale-105">
+                 <a href={`https://api.whatsapp.com/send?text=${getShareMessage()}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all duration-300 transform hover:scale-105" onClick={() => playSound(sounds.click)}>
                     {uiText.shareWhatsApp[lang]} 🔮
                 </a>
                 <button onClick={handleCopyToClipboard} className="flex-1 px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105">

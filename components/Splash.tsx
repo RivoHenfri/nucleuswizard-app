@@ -1,6 +1,7 @@
 import React from 'react';
 
 const Splash: React.FC = () => {
+
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center animate-fadeOut pointer-events-none">
       {/* Flash Effect */}
