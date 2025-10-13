@@ -27,7 +27,7 @@ const uiText = {
   castSpell: { en: '"I cast the Spell of Integrity by..."', id: '"Aku mengucapkan Mantra Integritas dengan..."' },
   castSpellPlaceholder: { en: 'e.g., always giving honest feedback...', id: 'contoh: dengan selalu memberi masukan jujur...' },
   tagWizards: { en: 'Tag Your Fellow Wizards (optional)', id: 'Tandai Rekan Penyihirmu (opsional)' },
-  tagPlaceholder: { en: 'e.g., Maya, Dan', id: 'contoh: Maya, Dan' },
+  tagPlaceholder: { en: 'e.g, Dan, Maya, Perry, Dico, Budi, Cris, all member necleus', id: 'contoh: Dan, Maya, Perry, Dico, Budi, Cris, all member necleus' },
   shareWhatsApp: { en: 'Share to WhatsApp', id: 'Bagikan ke WhatsApp' },
   generateLink: { en: 'Generate Shareable Link', id: 'Buat Tautan' },
   linkCopied: { en: 'Link Copied!', id: 'Tautan Disalin!' },
