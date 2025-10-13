@@ -23,7 +23,7 @@ const uiText = {
   spinButton: { en: 'Spin the Nucleus', id: 'Putar Nukleus' },
   landedOn: { en: 'You Landed On:', id: 'Kamu Mendapat:' },
   yourName: { en: 'Your Name', id: 'Namamu' },
-  yourNamePlaceholder: { en: 'e.g., Albus Dumbledore', id: 'contoh: Albus Dumbledore' },
+  yourNamePlaceholder: { en: 'e.g., Tole', id: 'contoh: Tole' },
   castSpell: { en: '"I cast the Spell of Integrity by..."', id: '"Aku mengucapkan Mantra Integritas dengan..."' },
   castSpellPlaceholder: { en: 'e.g., always giving honest feedback...', id: 'contoh: dengan selalu memberi masukan jujur...' },
   tagWizards: { en: 'Tag Your Fellow Wizards (optional)', id: 'Tandai Rekan Penyihirmu (opsional)' },
@@ -95,7 +95,7 @@ const IntegrityWheel: React.FC = () => {
       `🔮 *${name || 'A Wizard'} ${uiText.spellMessage[lang]}*\n` +
       `“${spell}”\n` +
       `${taggedLine}\n` +
-      `https://nucleuswizard.app/spell?ref=${name}`
+      `https://rivohenfri.github.io/nucleuswizard-app/`
     );
   };
   
