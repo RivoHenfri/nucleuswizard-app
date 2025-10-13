@@ -27,7 +27,7 @@ const uiText = {
   castSpell: { en: '"I cast the Spell of Integrity by..."', id: '"Aku mengucapkan Mantra Integritas dengan..."' },
   castSpellPlaceholder: { en: 'e.g., always giving honest feedback...', id: 'contoh: dengan selalu memberi masukan jujur...' },
   tagWizards: { en: 'Tag Your Fellow Wizards (optional)', id: 'Tandai Rekan Penyihirmu (opsional)' },
-  tagPlaceholder: { en: 'e.g, Dan, Maya, Perry, Dico, Budi, Cris, all member necleus', id: 'contoh: Dan, Maya, Perry, Dico, Budi, Cris, all member necleus' },
+  tagPlaceholder: { en: 'e.g. Dan, Perry, Budi, nucleus member, etc', id: 'e.g. Dan, Perry, Budi, anggota nucleus, dll' },
   shareWhatsApp: { en: 'Share to WhatsApp', id: 'Bagikan ke WhatsApp' },
   generateLink: { en: 'Generate Shareable Link', id: 'Buat Tautan' },
   linkCopied: { en: 'Link Copied!', id: 'Tautan Disalin!' },
@@ -173,7 +173,7 @@ const IntegrityWheel: React.FC = () => {
           <button
             onClick={handleSpin}
             disabled={screen === 'spinning'}
-            className="px-12 py-4 min-w-64 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            className="px-12 py-4 min-w-64 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full hover:bg-emerald-500 transition-all duration-300 transform hover:scale-110 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:animate-none animate-pulse-button"
           >
             {uiText.spinButton[lang]}
           </button>

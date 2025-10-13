@@ -27,6 +27,12 @@
       }
       .animate-pulse-glow { animation: pulse-glow 2.5s infinite ease-in-out; animation-delay: 0.5s; }
 
+      @keyframes pulse-button {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 15px 0px rgba(16, 185, 129, 0.5); }
+        50% { transform: scale(1.03); box-shadow: 0 0 25px 8px rgba(16, 185, 129, 0.7); }
+      }
+      .animate-pulse-button { animation: pulse-button 2.5s infinite ease-in-out; }
+
       @keyframes fadeInDelayed {
         0% { opacity: 0; transform: translateY(20px); }
         30% { opacity: 0; transform: translateY(20px); }
