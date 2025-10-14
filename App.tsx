@@ -28,7 +28,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <main className="relative min-h-screen w-full bg-cover bg-center bg-fixed p-4 md:p-8" style={{backgroundImage: "url('https://i.imgur.com/eBf7p3R.jpeg')"}}>
+    <main className="relative min-h-screen w-full bg-cover bg-center bg-fixed p-4 md:p-8" style={{backgroundImage: "url('https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=2070')"}}>
       <div className="starfield">
         <div className="stars stars-slow"></div>
         <div className="stars stars-medium"></div>
