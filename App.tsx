@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
 
-const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_large_cast.ogg';
-const backgroundSound = 'https://actions.google.com/sounds/v1/weather/wind_loop.ogg';
+const splashSound = 'https://archive.org/download/5_20220320/5.mp3';
+const backgroundSound = 'https://archive.org/download/ambient-music-collection/Ambiences/Ambient%20Music%20(Magical).mp3';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);

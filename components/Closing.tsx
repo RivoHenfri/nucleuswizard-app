@@ -3,7 +3,7 @@ import React from 'react';
 
 // --- Audio Assets ---
 const sounds = {
-  sessionEnd: 'https://actions.google.com/sounds/v1/achievements/achievement_fanfare.ogg',
+  sessionEnd: 'https://archive.org/download/level-up-sound-effect/level-up-sound-effect.mp3',
 };
 
 // --- Audio Player Utility ---

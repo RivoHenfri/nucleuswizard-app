@@ -20,10 +20,10 @@ const initialParticles: Particle[] = [
 
 // --- Audio Assets ---
 const sounds = {
-  particleClick: 'https://actions.google.com/sounds/v1/bubbles/blub_a_light.ogg',
-  nucleusGlow: 'https://actions.google.com/sounds/v1/science_fiction/warm_light_on.ogg',
-  complete: 'https://actions.google.com/sounds/v1/achievements/achievement_fanfare.ogg',
-  close: 'https://actions.google.com/sounds/v1/ui/dialog_close.ogg',
+  particleClick: 'https://archive.org/download/bubble-sound-effect/Bubble%20Sound%20Effect.mp3',
+  nucleusGlow: 'https://archive.org/download/magical-recharge-sound-effect/Magical%20Recharge%20Sound%20Effect.mp3',
+  complete: 'https://archive.org/download/level-up-sound-effect/level-up-sound-effect.mp3',
+  close: 'https://archive.org/download/swoosh-sound-effect/Swoosh%20Sound%20Effect.mp3',
 };
 
 // --- Audio Player Utility ---

@@ -37,7 +37,7 @@ const spells: Spell[] = [
 
 // --- Audio Assets ---
 const sounds = {
-  submit: 'https://actions.google.com/sounds/v1/magical/magic_trick.ogg',
+  submit: 'https://archive.org/download/ding-sound-effect_202103/ding-sound-effect.mp3',
 };
 
 // --- Audio Player Utility ---

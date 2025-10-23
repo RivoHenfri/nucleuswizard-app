@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import type { Trait } from '../types';
 
@@ -32,7 +33,7 @@ const uiText = {
   castSpell: { en: '"I cast the Spell of Integrity by..."', id: '"Aku mengucapkan Mantra Integritas dengan..."' },
   castSpellPlaceholder: { en: 'e.g., always giving honest feedback...', id: 'contoh: dengan selalu memberi masukan jujur...' },
   tagWizards: { en: 'Tag Your Fellow Wizards (optional)', id: 'Tandai Rekan Penyihirmu (opsional)' },
-  tagPlaceholder: { en: 'e.g. Dan, Perry, Budi, nucleus member, etc', id: 'e.g. Dan, Perry, Budi, anggota nucleus, dll' },
+  tagPlaceholder: { en: 'e.g. Tag your Nucleus teammates to cast their spell ✨', id: 'contoh: Tandai rekan tim Nucleus-mu untuk mengucapkan mantra mereka ✨' },
   shareWhatsApp: { en: 'Share to WhatsApp', id: 'Bagikan ke WhatsApp' },
   generateLink: { en: 'Generate Shareable Link', id: 'Buat Tautan' },
   linkCopied: { en: 'Link Copied!', id: 'Tautan Disalin!' },
@@ -47,11 +48,11 @@ const uiText = {
 
 // --- Audio Assets ---
 const sounds = {
-  click: 'https://actions.google.com/sounds/v1/magical/magic_chime.ogg',
-  spin: 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg',
-  reveal: 'https://actions.google.com/sounds/v1/notifications/magic_impact_1.ogg',
-  copy: 'https://actions.google.com/sounds/v1/achievements/achievement_bell.ogg',
-  close: 'https://actions.google.com/sounds/v1/ui/dialog_close.ogg',
+  click: 'https://archive.org/download/classic-click/classic_click.mp3',
+  spin: 'https://archive.org/download/wind-chimes-sound/wind-chimes-sound.mp3',
+  reveal: 'https://archive.org/download/sound-effect-twinkle/Sound%20Effect%20-%20Twinkle.mp3',
+  copy: 'https://archive.org/download/ping-21-00-11/ping-21-00-11.mp3',
+  close: 'https://archive.org/download/swoosh-sound-effect/Swoosh%20Sound%20Effect.mp3',
 };
 
 // --- Audio Player Utility ---

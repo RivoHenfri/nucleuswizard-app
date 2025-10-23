@@ -9,7 +9,7 @@ interface ProfileProps {
 
 // --- Audio Assets ---
 const sounds = {
-  awaken: 'https://actions.google.com/sounds/v1/magical/magic_spell_short_1.ogg',
+  awaken: 'https://archive.org/download/orchestral-logo-sound-effect/Orchestral%20Logo%20Sound%20Effect.mp3',
 };
 
 // --- Audio Player Utility ---
