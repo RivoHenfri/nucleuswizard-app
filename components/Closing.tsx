@@ -11,10 +11,17 @@ const playSound = (src: string, loop = false) => {
   try {
     const audio = new Audio(src);
     audio.loop = loop;
-    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        // This error is common in modern browsers when audio is not user-initiated.
+        // It's safe to ignore, as the app functionality is not blocked.
+        console.warn(`Audio playback interrupted for "${src}". This may be due to browser autoplay policies.`, error);
+      });
+    }
     return audio;
   } catch (error) {
-    console.error("Could not play audio:", error);
+    console.error(`Could not play audio for "${src}":`, error);
     return null;
   }
 };
