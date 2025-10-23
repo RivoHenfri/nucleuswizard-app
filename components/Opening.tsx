@@ -5,6 +5,10 @@ import type { Trait } from '../types';
 type Language = 'en' | 'id';
 type GameScreen = 'language' | 'landing' | 'spinning' | 'form';
 
+interface IntegrityWheelProps {
+  backgroundAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
+}
+
 const traits: Trait[] = [
   { label: { en: 'Independent', id: 'Independent' }, prompt: { en: 'How do you make decisions that honor your values, even without external validation?', id: 'Bagaimana Anda membuat keputusan yang menghormati nilai-nilai Anda, bahkan tanpa validasi eksternal?' } },
   { label: { en: 'Natural', id: 'Natural' }, prompt: { en: 'When do you feel most authentic and aligned at work?', id: 'Kapan Anda merasa paling otentik dan selaras di tempat kerja?' } },
@@ -42,30 +46,29 @@ const uiText = {
   signature: { en: 'RR Nucleus', id: 'RR Nucleus' },
 };
 
-// --- Simple Web Audio API Sound Functions ---
-const createClickSound = (): void => {
+// --- Audio Assets ---
+const sounds = {
+  click: 'https://cdn.pixabay.com/audio/2022/03/15/audio_767923360a.mp3',
+  spin: 'https://cdn.pixabay.com/audio/2022/05/28/audio_833072e503.mp3',
+  reveal: 'https://cdn.pixabay.com/audio/2022/02/17/audio_36338b19d5.mp3',
+  copy: 'https://cdn.pixabay.com/audio/2021/08/04/audio_51c68f3521.mp3',
+  close: 'https://cdn.pixabay.com/audio/2022/03/31/audio_472a1106e2.mp3',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
   try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'square';
-    
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.1);
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
   } catch (error) {
-    console.log("Click sound creation failed:", error);
+    console.error("Could not play audio:", error);
+    return null;
   }
 };
 
-const IntegrityWheel: React.FC = () => {
+const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) => {
   const [lang, setLang] = useState<Language | null>(null);
   const [screen, setScreen] = useState<GameScreen>('language');
   const [selectedTrait, setSelectedTrait] = useState<Trait | null>(null);
@@ -98,7 +101,7 @@ const IntegrityWheel: React.FC = () => {
     playSound(sounds.click);
     playSound(sounds.spin);
 
-    if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.1;
+    if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.08;
     
     const newRotation = rotation + 360 * 5 + Math.random() * 360;
     const duration = 5000; // 5 seconds
@@ -107,7 +110,7 @@ const IntegrityWheel: React.FC = () => {
     setScreen('spinning');
 
     setTimeout(() => {
-      if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.3;
+      if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.25;
       playSound(sounds.reveal);
 
       const finalAngle = newRotation % 360;

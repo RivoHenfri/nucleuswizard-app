@@ -3,7 +3,7 @@ import React from 'react';
 
 // --- Audio Assets ---
 const sounds = {
-  sessionEnd: 'https://archive.org/download/level-up-sound-effect/level-up-sound-effect.mp3',
+  sessionEnd: 'https://cdn.pixabay.com/audio/2022/03/24/audio_73f0c1126b.mp3',
 };
 
 // --- Audio Player Utility ---

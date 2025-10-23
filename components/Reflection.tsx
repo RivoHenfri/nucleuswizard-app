@@ -37,7 +37,7 @@ const spells: Spell[] = [
 
 // --- Audio Assets ---
 const sounds = {
-  submit: 'https://archive.org/download/ding-sound-effect_202103/ding-sound-effect.mp3',
+  submit: 'https://cdn.pixabay.com/audio/2022/10/18/audio_216209b2e5.mp3',
 };
 
 // --- Audio Player Utility ---

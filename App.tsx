@@ -1,47 +1,30 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
 
-// Use Web Audio API to create simple audio tones instead of external files
-const createAudioTone = (frequency: number, duration: number, type: OscillatorType = 'sine'): void => {
-  try {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = type;
-    
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + duration);
-  } catch (error) {
-    console.log("Audio tone creation failed:", error);
-  }
-};
-
-// Create magical sound effect using multiple tones
-const playMagicalSound = (): void => {
-  createAudioTone(440, 0.3, 'sine');   // A note
-  setTimeout(() => createAudioTone(554, 0.3, 'sine'), 100);   // C# note
-  setTimeout(() => createAudioTone(659, 0.5, 'sine'), 200);   // E note
-};
-
-// Create ambient background sound using low frequency tones
-const playBackgroundAmbient = (): void => {
-  createAudioTone(60, 2, 'sine');   // Low hum
-  setTimeout(() => createAudioTone(80, 1.5, 'triangle'), 500);
-};
+const splashSound = 'https://cdn.pixabay.com/audio/2022/03/15/audio_2b4b537f07.mp3';
+const backgroundSound = 'https://cdn.pixabay.com/audio/2022/11/17/audio_850d533c3a.mp3';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
-  const backgroundIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Pre-load background audio on component mount to ensure it's ready to play.
+  useEffect(() => {
+    const audio = new Audio(backgroundSound);
+    audio.loop = true;
+    audio.volume = 0.25;
+    backgroundAudioRef.current = audio;
+
+    // Clean up the audio element when the component unmounts.
+    return () => {
+      if (audio) {
+        audio.pause();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -52,47 +35,25 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [hasStarted]);
   
-  // This function "unlocks" the browser's audio context, allowing sounds to play.
-  // It should be called on the very first user interaction.
-  const unlockAudio = () => {
-    try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-      }
-    } catch (e) {
-      console.error("Could not unlock audio context:", e);
-    }
-  };
 
   const handleStart = () => {
-    unlockAudio(); // Unlock audio on the first click.
+    // Play sounds directly within the user-initiated click event to comply with browser autoplay policies.
+    
+    // Play a short splash sound on demand.
+    try {
+      const audio = new Audio(splashSound);
+      audio.play().catch(error => console.log("Splash audio was interrupted by browser.", error));
+    } catch (error) {
+      console.error("Could not play splash audio:", error);
+    }
 
-    // Play magical sound using Web Audio API
-    playMagicalSound();
-
-    // Start background ambient sounds
-    if (!backgroundIntervalRef.current) {
-      // Play ambient sound every 5 seconds
-      backgroundIntervalRef.current = setInterval(() => {
-        playBackgroundAmbient();
-      }, 5000);
-      
-      // Play initial background sound
-      playBackgroundAmbient();
+    // Play the pre-loaded background music.
+    if (backgroundAudioRef.current) {
+      backgroundAudioRef.current.play().catch(error => console.log("Background audio playback failed.", error));
     }
     
     setHasStarted(true);
   };
-
-  // Cleanup background sounds when component unmounts
-  useEffect(() => {
-    return () => {
-      if (backgroundIntervalRef.current) {
-        clearInterval(backgroundIntervalRef.current);
-      }
-    };
-  }, []);
 
   return (
     <main className="relative min-h-screen w-full bg-cover bg-center bg-fixed p-4 md:p-8" style={{backgroundImage: "url('https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=2070')"}}>
@@ -116,7 +77,7 @@ const App: React.FC = () => {
              </button>
          </div>
         ) : (
-          isLoading ? <Splash /> : <IntegrityWheel />
+          isLoading ? <Splash /> : <IntegrityWheel backgroundAudioRef={backgroundAudioRef} />
         )}
       </div>
     </main>
