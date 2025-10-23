@@ -10,18 +10,27 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
   const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
+  const splashAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Pre-load background audio on component mount to ensure it's ready to play.
+  // Pre-load audio on component mount to ensure it's ready to play.
   useEffect(() => {
-    const audio = new Audio(backgroundSound);
-    audio.loop = true;
-    audio.volume = 0.25;
-    backgroundAudioRef.current = audio;
+    const bgAudio = new Audio(backgroundSound);
+    bgAudio.loop = true;
+    bgAudio.volume = 0.25;
+    bgAudio.preload = 'auto';
+    backgroundAudioRef.current = bgAudio;
 
-    // Clean up the audio element when the component unmounts.
+    const spAudio = new Audio(splashSound);
+    spAudio.preload = 'auto';
+    splashAudioRef.current = spAudio;
+
+    // Clean up the audio elements when the component unmounts.
     return () => {
-      if (audio) {
-        audio.pause();
+      if (bgAudio) {
+        bgAudio.pause();
+      }
+      if (spAudio) {
+        spAudio.pause();
       }
     };
   }, []);
@@ -37,19 +46,14 @@ const App: React.FC = () => {
   
 
   const handleStart = () => {
-    // Play sounds directly within the user-initiated click event to comply with browser autoplay policies.
-    
-    // Play a short splash sound on demand.
-    try {
-      const audio = new Audio(splashSound);
-      audio.play().catch(error => console.log("Splash audio was interrupted by browser.", error));
-    } catch (error) {
-      console.error("Could not play splash audio:", error);
+    // Play pre-loaded sounds directly within the user-initiated click event to comply with browser autoplay policies.
+    if (splashAudioRef.current) {
+      splashAudioRef.current.currentTime = 0;
+      splashAudioRef.current.play().catch(error => console.warn("Splash audio playback failed.", error));
     }
 
-    // Play the pre-loaded background music.
     if (backgroundAudioRef.current) {
-      backgroundAudioRef.current.play().catch(error => console.log("Background audio playback failed.", error));
+      backgroundAudioRef.current.play().catch(error => console.warn("Background audio playback failed.", error));
     }
     
     setHasStarted(true);

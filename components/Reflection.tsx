@@ -41,16 +41,27 @@ const sounds = {
 };
 
 // --- Audio Player Utility ---
+// A simple cache to avoid re-creating Audio objects.
+const audioCache: { [src: string]: HTMLAudioElement } = {};
+
 const playSound = (src: string, loop = false) => {
   try {
-    const audio = new Audio(src);
+    let audio = audioCache[src];
+    if (!audio) {
+      audio = new Audio(src);
+      audio.preload = 'auto';
+      audioCache[src] = audio;
+    }
+    
     audio.loop = loop;
+    audio.currentTime = 0; // Rewind to start
+
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        // This error is common in modern browsers when audio is not user-initiated.
-        // It's safe to ignore, as the app functionality is not blocked.
-        console.warn(`Audio playback interrupted for "${src}". This may be due to browser autoplay policies.`, error);
+        // This warning is helpful for debugging but can be ignored during normal use,
+        // as browsers often interrupt audio for various reasons (e.g., quick user actions).
+        console.warn(`Audio playback for "${src}" was interrupted.`, error);
       });
     }
     return audio;
