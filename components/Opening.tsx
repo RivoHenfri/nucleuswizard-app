@@ -48,15 +48,14 @@ const uiText = {
 
 // --- Audio Assets ---
 const sounds = {
-  click: 'https://cdn.pixabay.com/audio/2022/03/15/audio_767923360a.mp3',
-  spin: 'https://cdn.pixabay.com/audio/2022/05/28/audio_833072e503.mp3',
-  reveal: 'https://cdn.pixabay.com/audio/2022/02/17/audio_36338b19d5.mp3',
-  copy: 'https://cdn.pixabay.com/audio/2021/08/04/audio_51c68f3521.mp3',
-  close: 'https://cdn.pixabay.com/audio/2022/03/31/audio_472a1106e2.mp3',
+  click: 'https://actions.google.com/sounds/v1/ui/ui_tap.ogg',
+  spin: 'https://actions.google.com/sounds/v1/magical/magic_wand_swoosh.ogg',
+  reveal: 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg',
+  copy: 'https://actions.google.com/sounds/v1/ui/ui_notification_active.ogg',
+  close: 'https://actions.google.com/sounds/v1/ui/ui_pop_down.ogg',
 };
 
 // --- Audio Player Utility ---
-// A simple cache to avoid re-creating Audio objects.
 const audioCache: { [src: string]: HTMLAudioElement } = {};
 
 const playSound = (src: string, loop = false) => {
@@ -68,20 +67,25 @@ const playSound = (src: string, loop = false) => {
       audioCache[src] = audio;
     }
     
+    // If the audio is already playing, pause it before restarting.
+    // This prevents overlapping sounds on rapid clicks and ensures a clean playback.
+    if (!audio.paused) {
+      audio.pause();
+    }
+    audio.currentTime = 0;
     audio.loop = loop;
-    audio.currentTime = 0; // Rewind to start
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        // This warning is helpful for debugging but can be ignored during normal use,
-        // as browsers often interrupt audio for various reasons (e.g., quick user actions).
-        console.warn(`Audio playback for "${src}" was interrupted.`, error);
+        // Browser policies can interrupt audio playback. We log this as a warning,
+        // as it's often not a critical error (e.g., user clicked away).
+        console.warn(`Audio playback for "${src}" was interrupted by the browser:`, error.message);
       });
     }
     return audio;
   } catch (error) {
-    console.error(`Could not play audio for "${src}":`, error);
+    console.error(`Could not initialize or play audio for "${src}":`, error);
     return null;
   }
 };

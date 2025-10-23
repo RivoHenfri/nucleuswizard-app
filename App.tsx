@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
 
-const splashSound = 'https://cdn.pixabay.com/audio/2022/03/15/audio_2b4b537f07.mp3';
-const backgroundSound = 'https://cdn.pixabay.com/audio/2022/11/17/audio_850d533c3a.mp3';
+const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg';
+const backgroundSound = 'https://www.chosic.com/wp-content/uploads/2022/01/enchanted-valley-127769.mp3';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);

@@ -9,11 +9,10 @@ interface ProfileProps {
 
 // --- Audio Assets ---
 const sounds = {
-  awaken: 'https://cdn.pixabay.com/audio/2023/07/20/audio_5868e07507.mp3',
+  awaken: 'https://actions.google.com/sounds/v1/magical/magic_spell_explosion.ogg',
 };
 
 // --- Audio Player Utility ---
-// A simple cache to avoid re-creating Audio objects.
 const audioCache: { [src: string]: HTMLAudioElement } = {};
 
 const playSound = (src: string, loop = false) => {
@@ -25,20 +24,25 @@ const playSound = (src: string, loop = false) => {
       audioCache[src] = audio;
     }
     
+    // If the audio is already playing, pause it before restarting.
+    // This prevents overlapping sounds on rapid clicks and ensures a clean playback.
+    if (!audio.paused) {
+      audio.pause();
+    }
+    audio.currentTime = 0;
     audio.loop = loop;
-    audio.currentTime = 0; // Rewind to start
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        // This warning is helpful for debugging but can be ignored during normal use,
-        // as browsers often interrupt audio for various reasons (e.g., quick user actions).
-        console.warn(`Audio playback for "${src}" was interrupted.`, error);
+        // Browser policies can interrupt audio playback. We log this as a warning,
+        // as it's often not a critical error (e.g., user clicked away).
+        console.warn(`Audio playback for "${src}" was interrupted by the browser:`, error.message);
       });
     }
     return audio;
   } catch (error) {
-    console.error(`Could not play audio for "${src}":`, error);
+    console.error(`Could not initialize or play audio for "${src}":`, error);
     return null;
   }
 };
