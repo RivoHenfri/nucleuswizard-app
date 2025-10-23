@@ -5,10 +5,6 @@ import type { Trait } from '../types';
 type Language = 'en' | 'id';
 type GameScreen = 'language' | 'landing' | 'spinning' | 'form';
 
-interface IntegrityWheelProps {
-  backgroundAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
-}
-
 const traits: Trait[] = [
   { label: { en: 'Independent', id: 'Independent' }, prompt: { en: 'How do you make decisions that honor your values, even without external validation?', id: 'Bagaimana Anda membuat keputusan yang menghormati nilai-nilai Anda, bahkan tanpa validasi eksternal?' } },
   { label: { en: 'Natural', id: 'Natural' }, prompt: { en: 'When do you feel most authentic and aligned at work?', id: 'Kapan Anda merasa paling otentik dan selaras di tempat kerja?' } },
@@ -46,29 +42,30 @@ const uiText = {
   signature: { en: 'RR Nucleus', id: 'RR Nucleus' },
 };
 
-// --- Audio Assets ---
-const sounds = {
-  click: 'https://archive.org/download/classic-click/classic_click.mp3',
-  spin: 'https://archive.org/download/wind-chimes-sound/wind-chimes-sound.mp3',
-  reveal: 'https://archive.org/download/sound-effect-twinkle/Sound%20Effect%20-%20Twinkle.mp3',
-  copy: 'https://archive.org/download/ping-21-00-11/ping-21-00-11.mp3',
-  close: 'https://archive.org/download/swoosh-sound-effect/Swoosh%20Sound%20Effect.mp3',
-};
-
-// --- Audio Player Utility ---
-const playSound = (src: string, loop = false) => {
+// --- Simple Web Audio API Sound Functions ---
+const createClickSound = (): void => {
   try {
-    const audio = new Audio(src);
-    audio.loop = loop;
-    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
-    return audio;
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'square';
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
   } catch (error) {
-    console.error("Could not play audio:", error);
-    return null;
+    console.log("Click sound creation failed:", error);
   }
 };
 
-const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) => {
+const IntegrityWheel: React.FC = () => {
   const [lang, setLang] = useState<Language | null>(null);
   const [screen, setScreen] = useState<GameScreen>('language');
   const [selectedTrait, setSelectedTrait] = useState<Trait | null>(null);
