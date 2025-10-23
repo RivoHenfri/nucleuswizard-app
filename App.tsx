@@ -2,13 +2,46 @@ import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
 
-const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_large_cast.ogg';
-const backgroundSound = 'https://actions.google.com/sounds/v1/weather/wind_loop.ogg';
+// Use Web Audio API to create simple audio tones instead of external files
+const createAudioTone = (frequency: number, duration: number, type: OscillatorType = 'sine'): void => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = type;
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (error) {
+    console.log("Audio tone creation failed:", error);
+  }
+};
+
+// Create magical sound effect using multiple tones
+const playMagicalSound = (): void => {
+  createAudioTone(440, 0.3, 'sine');   // A note
+  setTimeout(() => createAudioTone(554, 0.3, 'sine'), 100);   // C# note
+  setTimeout(() => createAudioTone(659, 0.5, 'sine'), 200);   // E note
+};
+
+// Create ambient background sound using low frequency tones
+const playBackgroundAmbient = (): void => {
+  createAudioTone(60, 2, 'sine');   // Low hum
+  setTimeout(() => createAudioTone(80, 1.5, 'triangle'), 500);
+};
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
-  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -27,11 +60,6 @@ const App: React.FC = () => {
       if (audioContext.state === 'suspended') {
         audioContext.resume();
       }
-      // A tiny silent sound helps ensure the context is active on all browsers.
-      const source = audioContext.createBufferSource();
-      source.buffer = audioContext.createBuffer(1, 1, 22050);
-      source.connect(audioContext.destination);
-      source.start(0);
     } catch (e) {
       console.error("Could not unlock audio context:", e);
     }
@@ -40,24 +68,31 @@ const App: React.FC = () => {
   const handleStart = () => {
     unlockAudio(); // Unlock audio on the first click.
 
-    try {
-      const audio = new Audio(splashSound);
-      audio.play().catch(error => console.log("Splash audio was interrupted by browser.", error));
-    } catch (error) {
-      console.error("Could not play splash audio:", error);
-    }
+    // Play magical sound using Web Audio API
+    playMagicalSound();
 
-    // Start background music at the beginning of the journey
-    if (!backgroundAudioRef.current) {
-      const audio = new Audio(backgroundSound);
-      audio.loop = true;
-      audio.volume = 0.3;
-      audio.play().catch(error => console.log("Background audio playback failed.", error));
-      backgroundAudioRef.current = audio;
+    // Start background ambient sounds
+    if (!backgroundIntervalRef.current) {
+      // Play ambient sound every 5 seconds
+      backgroundIntervalRef.current = setInterval(() => {
+        playBackgroundAmbient();
+      }, 5000);
+      
+      // Play initial background sound
+      playBackgroundAmbient();
     }
     
     setHasStarted(true);
   };
+
+  // Cleanup background sounds when component unmounts
+  useEffect(() => {
+    return () => {
+      if (backgroundIntervalRef.current) {
+        clearInterval(backgroundIntervalRef.current);
+      }
+    };
+  }, []);
 
   return (
     <main className="relative min-h-screen w-full bg-cover bg-center bg-fixed p-4 md:p-8" style={{backgroundImage: "url('https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=2070')"}}>
@@ -81,7 +116,7 @@ const App: React.FC = () => {
              </button>
          </div>
         ) : (
-          isLoading ? <Splash /> : <IntegrityWheel backgroundAudioRef={backgroundAudioRef} />
+          isLoading ? <Splash /> : <IntegrityWheel />
         )}
       </div>
     </main>
