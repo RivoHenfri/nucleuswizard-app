@@ -46,46 +46,93 @@ const uiText = {
   signature: { en: 'RR Nucleus', id: 'RR Nucleus' },
 };
 
-// --- Audio Assets ---
-const sounds = {
-  click: 'https://actions.google.com/sounds/v1/ui/ui_tap.ogg',
-  spin: 'https://actions.google.com/sounds/v1/magical/magic_wand_swoosh.ogg',
-  reveal: 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg',
-  copy: 'https://actions.google.com/sounds/v1/ui/ui_notification_active.ogg',
-  close: 'https://actions.google.com/sounds/v1/ui/ui_pop_down.ogg',
+// Most reliable audio sources using Web Audio API for simple sounds
+const createSimpleBeep = (frequency: number, duration: number, volume: number = 0.3) => {
+  try {
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (error) {
+    console.warn('Audio API not supported:', error);
+  }
 };
 
-// --- Audio Player Utility ---
+// Fallback to reliable external audio sources
+const sounds = {
+  click: 'https://www.soundjay.com/misc/beep-07a.wav',
+  hover: 'https://www.soundjay.com/misc/beep-08a.wav', 
+  spin: 'https://www.soundjay.com/misc/whoosh-10.wav',
+  reveal: 'https://www.soundjay.com/misc/magic-chime-02.wav',
+  success: 'https://www.soundjay.com/misc/ding-idea-40142.wav',
+  copy: 'https://www.soundjay.com/misc/beep-28.wav',
+  close: 'https://www.soundjay.com/misc/click-02.wav',
+  transition: 'https://www.soundjay.com/misc/swoosh-06.wav'
+};
+
+// Enhanced audio player with Web Audio API fallback
 const audioCache: { [src: string]: HTMLAudioElement } = {};
 
-const playSound = (src: string, loop = false) => {
+const playSound = (soundName: string, volume = 0.6) => {
   try {
+    // For simple sounds, use Web Audio API for better reliability
+    if (soundName === 'click') {
+      createSimpleBeep(800, 0.1, volume);
+      return;
+    } else if (soundName === 'hover') {
+      createSimpleBeep(600, 0.08, volume * 0.5);
+      return;
+    } else if (soundName === 'copy') {
+      createSimpleBeep(1000, 0.15, volume);
+      return;
+    }
+    
+    // For other sounds, try external URLs with fallback
+    const src = sounds[soundName as keyof typeof sounds];
+    if (!src) {
+      console.warn(`Sound "${soundName}" not found`);
+      return;
+    }
+    
     let audio = audioCache[src];
     if (!audio) {
       audio = new Audio(src);
       audio.preload = 'auto';
+      audio.crossOrigin = 'anonymous'; // Help with CORS
       audioCache[src] = audio;
     }
     
-    // If the audio is already playing, pause it before restarting.
-    // This prevents overlapping sounds on rapid clicks and ensures a clean playback.
-    if (!audio.paused) {
-      audio.pause();
-    }
+    // Reset and play
     audio.currentTime = 0;
-    audio.loop = loop;
-
+    audio.volume = volume;
+    
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        // Browser policies can interrupt audio playback. We log this as a warning,
-        // as it's often not a critical error (e.g., user clicked away).
-        console.warn(`Audio playback for "${src}" was interrupted by the browser:`, error.message);
+        console.warn(`Audio playback failed for "${soundName}":`, error.message);
+        // Fallback to beep for failed external sounds
+        if (soundName === 'spin') createSimpleBeep(400, 0.3, volume);
+        else if (soundName === 'reveal') createSimpleBeep(1200, 0.5, volume);
+        else if (soundName === 'success') createSimpleBeep(880, 0.4, volume);
+        else createSimpleBeep(500, 0.1, volume);
       });
     }
     return audio;
   } catch (error) {
-    console.error(`Could not initialize or play audio for "${src}":`, error);
+    console.error(`Audio error for "${soundName}":`, error);
+    // Final fallback to simple beep
+    createSimpleBeep(600, 0.1, volume);
     return null;
   }
 };
@@ -113,15 +160,16 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
   }, []);
 
   const selectLanguage = (selectedLang: Language) => {
-    playSound(sounds.click);
+    playSound('click');
+    playSound('transition');
     setLang(selectedLang);
     setCopyButtonText(uiText.generateLink[selectedLang]);
     setScreen('landing');
   };
 
   const handleSpin = () => {
-    playSound(sounds.click);
-    playSound(sounds.spin);
+    playSound('click');
+    playSound('spin');
 
     if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.08;
     
@@ -133,7 +181,7 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
 
     setTimeout(() => {
       if (backgroundAudioRef.current) backgroundAudioRef.current.volume = 0.25;
-      playSound(sounds.reveal);
+      playSound('reveal');
 
       const finalAngle = newRotation % 360;
       const segmentAngle = 360 / traits.length;
@@ -145,7 +193,8 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
   };
 
   const closeModal = () => {
-    playSound(sounds.close);
+    playSound('close');
+    playSound('transition');
     setIsModalOpen(false);
     setScreen('form');
   };
@@ -179,7 +228,7 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
   
   const handleCopyToClipboard = () => {
     if (!lang) return;
-    playSound(sounds.copy);
+    playSound('copy');
     navigator.clipboard.writeText(decodeURIComponent(getShareMessage()));
     setCopyButtonText(uiText.linkCopied[lang]);
     setTimeout(() => setCopyButtonText(uiText.generateLink[lang]), 2000);
@@ -191,8 +240,20 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
          <h1 className="font-cinzel text-3xl md:text-5xl font-bold text-yellow-200 mb-8">{uiText.chooseLanguage.en}</h1>
          <h2 className="font-cinzel text-2xl md:text-4xl font-bold text-yellow-200/80 mb-12">{uiText.chooseLanguage.id}</h2>
          <div className="flex gap-6">
-            <button onClick={() => selectLanguage('en')} className="px-10 py-4 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105">EN</button>
-            <button onClick={() => selectLanguage('id')} className="px-10 py-4 bg-yellow-400 text-gray-900 font-bold text-lg rounded-full shadow-lg shadow-yellow-400/30 hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105">ID</button>
+            <button 
+              onClick={() => selectLanguage('en')} 
+              onMouseEnter={() => playSound('hover')}
+              className="px-10 py-4 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105"
+            >
+              EN
+            </button>
+            <button 
+              onClick={() => selectLanguage('id')} 
+              onMouseEnter={() => playSound('hover')}
+              className="px-10 py-4 bg-yellow-400 text-gray-900 font-bold text-lg rounded-full shadow-lg shadow-yellow-400/30 hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105"
+            >
+              ID
+            </button>
          </div>
       </div>
     );
@@ -251,6 +312,7 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
           </div>
           <button
             onClick={handleSpin}
+            onMouseEnter={() => playSound('hover')}
             disabled={screen === 'spinning'}
             className="px-12 py-4 min-w-64 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full hover:bg-emerald-500 transition-all duration-300 transform hover:scale-110 disabled:bg-gray-600 disabled:cursor-not-allowed disabled:animate-none animate-pulse-button"
           >
@@ -261,7 +323,11 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
                 <div className="bg-[#1a1a2e] border border-yellow-400/50 rounded-xl shadow-2xl shadow-yellow-500/20 max-w-md w-full m-4 p-8 text-center" onClick={e => e.stopPropagation()}>
                 <h3 className="font-cinzel text-2xl font-bold text-yellow-300 mb-4">{selectedTrait.label[lang]}</h3>
                 <p className="text-gray-300 text-lg">{selectedTrait.prompt[lang]}</p>
-                <button onClick={closeModal} className="mt-8 px-8 py-3 bg-amber-500 text-gray-900 font-bold rounded-full shadow-lg hover:bg-amber-400 transition-all duration-300 transform hover:scale-105">
+                <button 
+                  onClick={closeModal} 
+                  onMouseEnter={() => playSound('hover')}
+                  className="mt-8 px-8 py-3 bg-amber-500 text-gray-900 font-bold rounded-full shadow-lg hover:bg-amber-400 transition-all duration-300 transform hover:scale-105"
+                >
                     {uiText.modalButton[lang]}
                 </button>
                 </div>
@@ -293,10 +359,21 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                 <a href={`https://api.whatsapp.com/send?text=${getShareMessage()}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all duration-300 transform hover:scale-105" onClick={() => playSound(sounds.click)}>
+                 <a 
+                   href={`https://api.whatsapp.com/send?text=${getShareMessage()}`} 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="flex-1 text-center px-6 py-3 bg-green-500 text-white font-bold rounded-full shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all duration-300 transform hover:scale-105" 
+                   onClick={() => playSound('click')}
+                   onMouseEnter={() => playSound('hover')}
+                 >
                     {uiText.shareWhatsApp[lang]} 🔮
                 </a>
-                <button onClick={handleCopyToClipboard} className="flex-1 px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105">
+                <button 
+                  onClick={handleCopyToClipboard} 
+                  onMouseEnter={() => playSound('hover')}
+                  className="flex-1 px-6 py-3 bg-emerald-600 text-white font-bold rounded-full shadow-lg shadow-emerald-600/30 hover:bg-emerald-500 transition-all duration-300 transform hover:scale-105"
+                >
                     {copyButtonText} ✨
                 </button>
             </div>

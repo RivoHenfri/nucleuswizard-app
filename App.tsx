@@ -2,9 +2,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
+import AudioControls from './components/AudioControls';
 
 const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg';
 const backgroundSound = 'https://www.chosic.com/wp-content/uploads/2022/01/enchanted-valley-127769.mp3';
+const hoverSound = 'https://actions.google.com/sounds/v1/ui/ui_button_hover.ogg';
+const successSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_cast.ogg';
+
+// Simple audio player
+const playSimpleSound = (src: string, volume = 0.6) => {
+  try {
+    const audio = new Audio(src);
+    audio.volume = volume;
+    audio.play().catch(error => console.warn("Audio playback failed:", error));
+  } catch (error) {
+    console.error("Audio error:", error);
+  }
+};
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +70,7 @@ const App: React.FC = () => {
       backgroundAudioRef.current.play().catch(error => console.warn("Background audio playback failed.", error));
     }
     
+    playSimpleSound(successSound);
     setHasStarted(true);
   };
 
@@ -67,6 +82,10 @@ const App: React.FC = () => {
         <div className="stars stars-fast"></div>
       </div>
       <div className="absolute inset-0 bg-[#141A17]/70 backdrop-blur-sm"></div>
+      
+      {/* Audio Controls */}
+      {hasStarted && <AudioControls backgroundAudioRef={backgroundAudioRef} />}
+      
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen py-10">
         {!hasStarted ? (
            <div className="text-center flex flex-col items-center justify-center">
@@ -75,6 +94,7 @@ const App: React.FC = () => {
              </h1>
              <button
                  onClick={handleStart}
+                 onMouseEnter={() => playSimpleSound(hoverSound, 0.3)}
                  className="px-12 py-4 bg-emerald-600 text-gray-100 font-bold text-lg rounded-full hover:bg-emerald-500 transition-all duration-300 transform hover:scale-110 animate-pulse-button"
              >
                  Begin the Journey
