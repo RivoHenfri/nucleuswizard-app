@@ -200,7 +200,7 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
   };
 
   const getShareMessage = () => {
-    if (!lang) return '';
+    if (!lang || !selectedTrait) return '';
     
     const wizardName = name.trim() || 'A Wizard';
     const taggedWizards = tags.trim() ? `@${tags.replace(/, ?/g, ', @')}` : '';
@@ -212,7 +212,7 @@ const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) =
       nextTurnLine = uiText.shareTeamTurn[lang];
     }
     
-    const introQuestion = traits[traits.length - 1].prompt[lang];
+    const introQuestion = selectedTrait.prompt[lang];
     
     const castingLine = uiText.shareCastingLine[lang].replace('{name}', `*${wizardName}*`);
 

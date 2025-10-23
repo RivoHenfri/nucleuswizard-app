@@ -5,7 +5,14 @@ import Splash from './components/Splash';
 import AudioControls from './components/AudioControls';
 
 const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg';
-const backgroundSound = 'https://www.chosic.com/wp-content/uploads/2022/01/enchanted-valley-127769.mp3';
+// Epic background music options (legal alternatives)
+const backgroundMusicOptions = {
+  epic: 'https://www.chosic.com/wp-content/uploads/2022/05/epic-cinematic-trailer-117909.mp3',
+  fantasy: 'https://www.chosic.com/wp-content/uploads/2022/01/enchanted-valley-127769.mp3',
+  heroic: 'https://www.chosic.com/wp-content/uploads/2021/12/heroic-kingdom-119502.mp3',
+  mystical: 'https://www.chosic.com/wp-content/uploads/2022/03/mystical-adventure-118739.mp3'
+};
+const backgroundSound = backgroundMusicOptions.epic; // Change this to switch music
 const hoverSound = 'https://actions.google.com/sounds/v1/ui/ui_button_hover.ogg';
 const successSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_cast.ogg';
 
