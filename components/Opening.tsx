@@ -4,6 +4,10 @@ import type { Trait } from '../types';
 type Language = 'en' | 'id';
 type GameScreen = 'language' | 'landing' | 'spinning' | 'form';
 
+interface IntegrityWheelProps {
+  backgroundAudioRef: React.MutableRefObject<HTMLAudioElement | null>;
+}
+
 const traits: Trait[] = [
   { label: { en: 'Independent', id: 'Independent' }, prompt: { en: 'How do you make decisions that honor your values, even without external validation?', id: 'Bagaimana Anda membuat keputusan yang menghormati nilai-nilai Anda, bahkan tanpa validasi eksternal?' } },
   { label: { en: 'Natural', id: 'Natural' }, prompt: { en: 'When do you feel most authentic and aligned at work?', id: 'Kapan Anda merasa paling otentik dan selaras di tempat kerja?' } },
@@ -22,6 +26,7 @@ const uiText = {
   instruction: { en: 'Spin the nucleus and awaken your Integrity spell.', id: 'Putar nukleus dan bangkitkan mantra Integritasmu.' },
   spinButton: { en: 'Spin the Nucleus', id: 'Putar Nukleus' },
   landedOn: { en: 'You Landed On:', id: 'Kamu Mendapat:' },
+  modalButton: { en: 'Cast My Spell ✨', id: 'Ucapkan Mantraku ✨' },
   yourName: { en: 'Your Name', id: 'Namamu' },
   yourNamePlaceholder: { en: 'e.g., Tole', id: 'contoh: Tole' },
   castSpell: { en: '"I cast the Spell of Integrity by..."', id: '"Aku mengucapkan Mantra Integritas dengan..."' },
@@ -31,20 +36,22 @@ const uiText = {
   shareWhatsApp: { en: 'Share to WhatsApp', id: 'Bagikan ke WhatsApp' },
   generateLink: { en: 'Generate Shareable Link', id: 'Buat Tautan' },
   linkCopied: { en: 'Link Copied!', id: 'Tautan Disalin!' },
-  spellMessage: { en: 'has casted the Spell of Integrity!', id: 'telah mengucapkan Mantra Integritas!' },
-  yourTurn: { en: 'your turn to awaken your inner wizard!', id: 'giliranmu untuk membangkitkan penyihir dalam dirimu!' },
-  teamTurn: { en: '@TeamNucleus — your turn to awaken your inner wizard!', id: '@TimNucleus — giliranmu untuk membangkitkan penyihir dalam dirimu!' },
+  shareCastingLine: { en: '✨ {name} casts the Spell of Integrity by...', id: '✨ {name} mengucapkan Mantra Integritas dengan...' },
+  shareNextTurn: { en: '🪄 Next to spin the Wheel of Integrity is {tags}!', id: '🪄 Giliran selanjutnya memutar Roda Integritas adalah {tags}!' },
+  shareTeamTurn: { en: '🪄 Now it\'s @TeamNucleus\'s turn to spin the Wheel of Integrity!', id: '🪄 Sekarang giliran @TimNucleus untuk memutar Roda Integritas!' },
+  shareCallToAction: { en: 'Unleash your element and spin your magic earth 🌍', id: 'Bebaskan elemenmu dan putar sihir bumimu 🌍' },
+  shareLinkPrefix: { en: '👉', id: '👉' },
   shareInstruction: { en: 'Click "Share to WhatsApp" to tag your fellow wizards in the Nucleus group and continue the chain message! Note: The @tag is for our internal game and won\'t automatically tag users in WhatsApp.', id: 'Klik "Bagikan ke WhatsApp" untuk menandai rekan penyihirmu di grup Nucleus dan melanjutkan pesan berantai! Catatan: Tanda @ adalah untuk permainan internal kita dan tidak akan secara otomatis menandai pengguna di WhatsApp.' },
   signature: { en: 'RR Nucleus', id: 'RR Nucleus' },
 };
 
 // --- Audio Assets ---
 const sounds = {
-  click: 'https://actions.google.com/sounds/v1/ui/ui_tap_positive.ogg',
+  click: 'https://actions.google.com/sounds/v1/magical/magic_chime.ogg',
   spin: 'https://actions.google.com/sounds/v1/magical/magic_spell_charge_up.ogg',
   reveal: 'https://actions.google.com/sounds/v1/notifications/magic_impact_1.ogg',
-  copy: 'https://actions.google.com/sounds/v1/ui/camera_shutter.ogg',
-  background: 'https://actions.google.com/sounds/v1/weather/wind_loop.ogg',
+  copy: 'https://actions.google.com/sounds/v1/achievements/achievement_bell.ogg',
+  close: 'https://actions.google.com/sounds/v1/ui/dialog_close.ogg',
 };
 
 // --- Audio Player Utility ---
@@ -60,7 +67,7 @@ const playSound = (src: string, loop = false) => {
   }
 };
 
-const IntegrityWheel: React.FC = () => {
+const IntegrityWheel: React.FC<IntegrityWheelProps> = ({ backgroundAudioRef }) => {
   const [lang, setLang] = useState<Language | null>(null);
   const [screen, setScreen] = useState<GameScreen>('language');
   const [selectedTrait, setSelectedTrait] = useState<Trait | null>(null);
@@ -74,7 +81,6 @@ const IntegrityWheel: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   const wheelRef = useRef<HTMLDivElement>(null);
-  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
   
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -88,14 +94,6 @@ const IntegrityWheel: React.FC = () => {
     setLang(selectedLang);
     setCopyButtonText(uiText.generateLink[selectedLang]);
     setScreen('landing');
-
-    if (!backgroundAudioRef.current) {
-        const audio = new Audio(sounds.background);
-        audio.loop = true;
-        audio.volume = 0.3;
-        audio.play().catch(error => console.log("Background audio playback failed.", error));
-        backgroundAudioRef.current = audio;
-    }
   };
 
   const handleSpin = () => {
@@ -124,19 +122,35 @@ const IntegrityWheel: React.FC = () => {
   };
 
   const closeModal = () => {
-    playSound(sounds.click);
+    playSound(sounds.close);
     setIsModalOpen(false);
     setScreen('form');
   };
 
   const getShareMessage = () => {
     if (!lang) return '';
-    const taggedLine = tags.trim() ? `✨ @${tags.replace(/, ?/g, ', @')} — ${uiText.yourTurn[lang]}` : `✨ ${uiText.teamTurn[lang]}`;
+    
+    const wizardName = name.trim() || 'A Wizard';
+    const taggedWizards = tags.trim() ? `@${tags.replace(/, ?/g, ', @')}` : '';
+
+    let nextTurnLine = '';
+    if (taggedWizards) {
+      nextTurnLine = uiText.shareNextTurn[lang].replace('{tags}', taggedWizards);
+    } else {
+      nextTurnLine = uiText.shareTeamTurn[lang];
+    }
+    
+    const introQuestion = traits[traits.length - 1].prompt[lang];
+    
+    const castingLine = uiText.shareCastingLine[lang].replace('{name}', `*${wizardName}*`);
+
     return encodeURIComponent(
-      `🔮 *${name || 'A Wizard'} ${uiText.spellMessage[lang]}*\n` +
-      `“${spell}”\n` +
-      `${taggedLine}\n` +
-      `https://rivohenfri.github.io/nucleuswizard-app/`
+      `${introQuestion}\n\n` +
+      `${castingLine}\n` +
+      `"${spell.trim()}"\n\n` +
+      `${nextTurnLine}\n` +
+      `${uiText.shareCallToAction[lang]}\n` +
+      `${uiText.shareLinkPrefix[lang]} https://rivohenfri.github.io/nucleuswizard-app/`
     );
   };
   
@@ -224,8 +238,8 @@ const IntegrityWheel: React.FC = () => {
                 <div className="bg-[#1a1a2e] border border-yellow-400/50 rounded-xl shadow-2xl shadow-yellow-500/20 max-w-md w-full m-4 p-8 text-center" onClick={e => e.stopPropagation()}>
                 <h3 className="font-cinzel text-2xl font-bold text-yellow-300 mb-4">{selectedTrait.label[lang]}</h3>
                 <p className="text-gray-300 text-lg">{selectedTrait.prompt[lang]}</p>
-                <button onClick={closeModal} className="mt-6 px-6 py-2 bg-amber-500 text-gray-900 font-bold rounded-full shadow-lg hover:bg-amber-400 transition-colors duration-300">
-                    OK
+                <button onClick={closeModal} className="mt-8 px-8 py-3 bg-amber-500 text-gray-900 font-bold rounded-full shadow-lg hover:bg-amber-400 transition-all duration-300 transform hover:scale-105">
+                    {uiText.modalButton[lang]}
                 </button>
                 </div>
             </div>

@@ -35,6 +35,25 @@ const spells: Spell[] = [
   },
 ];
 
+// --- Audio Assets ---
+const sounds = {
+  submit: 'https://actions.google.com/sounds/v1/magical/magic_trick.ogg',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
+  try {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
+  } catch (error) {
+    console.error("Could not play audio:", error);
+    return null;
+  }
+};
+
+
 const Reflection: React.FC<ReflectionProps> = ({ onComplete }) => {
   const [answers, setAnswers] = useState<string[]>(Array(spells.length).fill(''));
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +66,7 @@ const Reflection: React.FC<ReflectionProps> = ({ onComplete }) => {
   };
 
   const handleSubmit = async () => {
+    playSound(sounds.submit);
     setIsLoading(true);
     setError(null);
     

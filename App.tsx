@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import IntegrityWheel from './components/Opening';
 import Splash from './components/Splash';
 
 const splashSound = 'https://actions.google.com/sounds/v1/magical/magic_spell_large_cast.ogg';
+const backgroundSound = 'https://actions.google.com/sounds/v1/weather/wind_loop.ogg';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -16,14 +18,44 @@ const App: React.FC = () => {
     }, 3000); // Duration of the splash screen
     return () => clearTimeout(timer);
   }, [hasStarted]);
+  
+  // This function "unlocks" the browser's audio context, allowing sounds to play.
+  // It should be called on the very first user interaction.
+  const unlockAudio = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      // A tiny silent sound helps ensure the context is active on all browsers.
+      const source = audioContext.createBufferSource();
+      source.buffer = audioContext.createBuffer(1, 1, 22050);
+      source.connect(audioContext.destination);
+      source.start(0);
+    } catch (e) {
+      console.error("Could not unlock audio context:", e);
+    }
+  };
 
   const handleStart = () => {
+    unlockAudio(); // Unlock audio on the first click.
+
     try {
       const audio = new Audio(splashSound);
       audio.play().catch(error => console.log("Splash audio was interrupted by browser.", error));
     } catch (error) {
       console.error("Could not play splash audio:", error);
     }
+
+    // Start background music at the beginning of the journey
+    if (!backgroundAudioRef.current) {
+      const audio = new Audio(backgroundSound);
+      audio.loop = true;
+      audio.volume = 0.3;
+      audio.play().catch(error => console.log("Background audio playback failed.", error));
+      backgroundAudioRef.current = audio;
+    }
+    
     setHasStarted(true);
   };
 
@@ -49,7 +81,7 @@ const App: React.FC = () => {
              </button>
          </div>
         ) : (
-          isLoading ? <Splash /> : <IntegrityWheel />
+          isLoading ? <Splash /> : <IntegrityWheel backgroundAudioRef={backgroundAudioRef} />
         )}
       </div>
     </main>

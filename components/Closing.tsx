@@ -1,7 +1,33 @@
 
 import React from 'react';
 
+// --- Audio Assets ---
+const sounds = {
+  sessionEnd: 'https://actions.google.com/sounds/v1/achievements/achievement_fanfare.ogg',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
+  try {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
+  } catch (error) {
+    console.error("Could not play audio:", error);
+    return null;
+  }
+};
+
 const Closing: React.FC = () => {
+
+  const handleSessionComplete = () => {
+    playSound(sounds.sessionEnd);
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500); // Delay allows sound to play
+  };
+
   return (
     <div className="flex flex-col items-center max-w-4xl mx-auto text-center animate-fadeIn">
       <h2 className="font-cinzel text-3xl md:text-4xl font-bold text-yellow-300 mb-6">The Energy of Integrity</h2>
@@ -21,7 +47,7 @@ const Closing: React.FC = () => {
           </div>
       </div>
        <button 
-        onClick={() => window.location.reload()} // Simple action to end/restart
+        onClick={handleSessionComplete}
         className="mt-10 px-8 py-3 bg-gradient-to-r from-yellow-400 to-emerald-500 text-gray-900 font-bold rounded-full shadow-lg shadow-yellow-400/30 hover:opacity-90 transition-all duration-300 transform hover:scale-105"
       >
         Session Complete

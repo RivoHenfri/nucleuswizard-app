@@ -7,8 +7,31 @@ interface ProfileProps {
   onComplete: () => void;
 }
 
+// --- Audio Assets ---
+const sounds = {
+  awaken: 'https://actions.google.com/sounds/v1/magical/magic_spell_short_1.ogg',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
+  try {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
+  } catch (error) {
+    console.error("Could not play audio:", error);
+    return null;
+  }
+};
+
 const Profile: React.FC<ProfileProps> = ({ profileData, onComplete }) => {
   const { coreElement, guidingPrinciple, latentPower } = profileData;
+
+  const handleComplete = () => {
+    playSound(sounds.awaken);
+    onComplete();
+  };
 
   return (
     <div className="flex flex-col items-center w-full max-w-4xl mx-auto animate-fadeIn">
@@ -33,7 +56,7 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onComplete }) => {
       </div>
 
       <button 
-        onClick={onComplete}
+        onClick={handleComplete}
         className="mt-10 px-8 py-3 bg-emerald-500 text-gray-900 font-bold rounded-full shadow-lg shadow-emerald-500/30 hover:bg-emerald-400 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-500/50"
       >
         Awaken the Nucleus

@@ -18,6 +18,27 @@ const initialParticles: Particle[] = [
   { id: 9, name: 'You', prompt: 'What’s one action that reflects your integrity tomorrow?', isClicked: false },
 ];
 
+// --- Audio Assets ---
+const sounds = {
+  particleClick: 'https://actions.google.com/sounds/v1/bubbles/blub_a_light.ogg',
+  nucleusGlow: 'https://actions.google.com/sounds/v1/science_fiction/warm_light_on.ogg',
+  complete: 'https://actions.google.com/sounds/v1/achievements/achievement_fanfare.ogg',
+  close: 'https://actions.google.com/sounds/v1/ui/dialog_close.ogg',
+};
+
+// --- Audio Player Utility ---
+const playSound = (src: string, loop = false) => {
+  try {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.play().catch(error => console.log("Audio playback was interrupted.", error));
+    return audio;
+  } catch (error) {
+    console.error("Could not play audio:", error);
+    return null;
+  }
+};
+
 // Modal component defined inside to avoid extra file
 const Modal: React.FC<{ particle: Particle; onClose: () => void }> = ({ particle, onClose }) => (
   <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 animate-fadeIn" onClick={onClose}>
@@ -41,14 +62,26 @@ const NucleusGame: React.FC<NucleusGameProps> = ({ onComplete }) => {
 
   useEffect(() => {
     const allHaveBeenClicked = particles.every(p => p.isClicked);
-    if (allHaveBeenClicked) {
+    if (allHaveBeenClicked && !allClicked) {
+      playSound(sounds.nucleusGlow);
       setAllClicked(true);
     }
-  }, [particles]);
+  }, [particles, allClicked]);
 
   const handleParticleClick = (particle: Particle) => {
+    playSound(sounds.particleClick);
     setActiveParticle(particle);
     setParticles(prev => prev.map(p => p.id === particle.id ? { ...p, isClicked: true } : p));
+  };
+
+  const handleCloseModal = () => {
+    playSound(sounds.close);
+    setActiveParticle(null);
+  };
+
+  const handleComplete = () => {
+    playSound(sounds.complete);
+    onComplete();
   };
 
   const radius = 220; // in pixels for desktop
@@ -65,7 +98,7 @@ const NucleusGame: React.FC<NucleusGameProps> = ({ onComplete }) => {
           absolute w-24 h-24 md:w-32 md:h-32 rounded-full bg-yellow-400/50 
           flex items-center justify-center text-center font-bold text-yellow-100
           transition-all duration-1000 shadow-2xl
-          ${allClicked ? 'animate-pulse scale-110 shadow-yellow-400/60' : 'shadow-yellow-400/20'}
+          ${allClicked ? 'animate-pulse-glow scale-110 shadow-yellow-400/60' : 'shadow-yellow-400/20'}
         `}>
           Integrity
         </div>
@@ -96,14 +129,14 @@ const NucleusGame: React.FC<NucleusGameProps> = ({ onComplete }) => {
 
       {allClicked && (
         <button 
-          onClick={onComplete}
+          onClick={handleComplete}
           className="mt-12 px-8 py-3 bg-yellow-400 text-gray-900 font-bold rounded-full shadow-lg shadow-yellow-400/30 hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 animate-fadeIn"
         >
           Complete the Ritual
         </button>
       )}
 
-      {activeParticle && <Modal particle={activeParticle} onClose={() => setActiveParticle(null)} />}
+      {activeParticle && <Modal particle={activeParticle} onClose={handleCloseModal} />}
     </div>
   );
 };
